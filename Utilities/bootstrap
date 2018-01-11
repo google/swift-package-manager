@@ -246,11 +246,13 @@ class Target(object):
                 import_paths.append(os.path.join(dep_target.module_root_dir, "include"))
 
         if args.foundation_path:
+            corefoundation_path = os.path.join(args.foundation_path, 
+                                               args.foundation_install_prefix.strip("/"))
             import_paths.append(args.foundation_path)
-            import_paths.append(os.path.join(args.foundation_path,
-                                             "usr/lib/swift/CoreFoundation"))
-            import_paths.append(os.path.join(args.foundation_path,
-                                             "usr/lib/swift"))
+            import_paths.append(os.path.join(corefoundation_path,
+                                             "lib/swift/CoreFoundation"))
+            import_paths.append(os.path.join(corefoundation_path,
+                                             "lib/swift"))
         if args.libdispatch_build_dir:
             import_paths.append(os.path.join(args.libdispatch_build_dir,
                                              "src"))
@@ -818,6 +820,12 @@ def main():
                         help="use verbose output")
     parser.add_argument("--foundation", dest="foundation_path",
                         help="Path to Foundation build directory")
+    parser.add_argument("--foundation-install-prefix",
+                        help="Path to the installation location for swift-corelibs-foundation "
+                             "build products ('%(default)s' by default); CoreFoundation "
+                             "dependencies are expected to be found under "
+                             "FOUNDATION_BUILD_DIR/FOUNDATION_INSTALL_PREFIX.",
+                        default="usr/")
     parser.add_argument("--xctest", dest="xctest_path",
                         help="Path to XCTest build directory")
     parser.add_argument("--libdispatch-build-dir", dest="libdispatch_build_dir",
@@ -989,7 +997,8 @@ def main():
     
     if args.foundation_path:
         core_foundation_path = os.path.join(
-            args.foundation_path, "usr", "lib", "swift")
+            args.foundation_path, args.foundation_install_prefix.strip("/"),
+            "lib", "swift")
         # Tell the linker where to look for XCTest, but autolinking
         # knows to pass -lXCTest.
         build_flags.extend(["-Xlinker", "-L", "-Xlinker", args.foundation_path])
